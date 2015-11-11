@@ -118,12 +118,13 @@ func (s *Session) GetString(key string) string {
 	return v.(string)
 }
 
-//sessions manager interface
+//sessions manager
 type SessionManager struct {
 	sessions map[string] *Session
 	sessionsSync *sync.RWMutex
 }
 
+// create a new session manager
 func NewSessionManager() *SessionManager {
 	return &SessionManager{
 		sessions: make(map[string]*Session),
@@ -131,6 +132,7 @@ func NewSessionManager() *SessionManager {
 	}
 }
 
+//will get the session or create it if not found, cookie will be set with the new session
 func (sm *SessionManager) Get(w http.ResponseWriter, r *http.Request) httpway.Session {
 	sessionId:= ""
 

@@ -8,6 +8,7 @@ import (
 	"fmt"
 )
 
+//will catch a panic and if the logger is set will log it, if not will panic again
 func PanicCatcher(w http.ResponseWriter, r *http.Request, pr httprouter.Params) {
 	ctx:=httpway.GetContext(r)
 

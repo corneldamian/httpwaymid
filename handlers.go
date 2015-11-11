@@ -8,6 +8,8 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
+
+//is going to return a handler for httprouter NotFound, can be chained with middlewares
 func NotFound(router *httpway.Router) http.Handler {
 	return &simpleServe{
 		statusCode: http.StatusNotFound,
@@ -16,6 +18,7 @@ func NotFound(router *httpway.Router) http.Handler {
 	}
 }
 
+//is going to return a handler for httprouter MethodNotAllowed, can be chained with middlewares
 func MethodNotAllowed(router *httpway.Router) http.Handler {
 	return &simpleServe{
 		statusCode: http.StatusMethodNotAllowed,
