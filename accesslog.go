@@ -8,6 +8,8 @@ import (
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/corneldamian/httpway"
+	"io"
+	"fmt"
 )
 
 //this handler will write to logger function (the one form parameter) the w3c access log
@@ -74,4 +76,12 @@ func AccessLogHeader(logger func(v ...interface{})) {
 	logger("#Fields: c-ip x-c-user date time cs-method cs-uri-stem cs-uri-query cs(X-Forwarded-For) sc-bytes sc-status time-taken")
 	logger("#Software: httpway accesslog")
 	logger("#Start-Date: %s", time.Now().UTC().Format("2006-01-02 15:04:05"))
+}
+
+//write w3c access log header using io.Writer
+func AccessLogHeaderWriter(w io.Writer) {
+	fmt.Fprint(w, "#Version: 1.0\n")
+	fmt.Fprint(w, "#Fields: c-ip x-c-user date time cs-method cs-uri-stem cs-uri-query cs(X-Forwarded-For) sc-bytes sc-status time-taken\n")
+	fmt.Fprint(w, "#Software: httpway accesslog\n")
+	fmt.Fprintf(w, "#Start-Date: %s\n", time.Now().UTC().Format("2006-01-02 15:04:05"))
 }
