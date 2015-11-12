@@ -59,7 +59,7 @@ func AccessLog(logger func(v ...interface{})) httprouter.Handle{
 			starttime.UTC().Format("2006-01-02 15:04:05"),
 			r.Method,
 			r.URL.EscapedPath(),
-			r.URL.RawQuery,
+			query,
 			xforwarded,
 			ctx.TransferedBytes(),
 			statuscode,
