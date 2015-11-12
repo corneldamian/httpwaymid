@@ -24,9 +24,28 @@ func PanicCatcher(w http.ResponseWriter, r *http.Request, pr httprouter.Params) 
 				panic(rec)
 			}
 
-			ctx.Log().Error("Panic catched: %s", rec)
+			log := ctx.Log()
+
+			var (
+				l setCallDepth
+				ok bool
+			)
+
+			if l, ok=log.(setCallDepth); ok {
+				l.SetFileDepth(11)
+			}
+
+			log.Error("Panic catched: %s", rec)
+
+			if ok {
+				l.SetFileDepth(0) //reset
+			}
 		}
 	}()
 
 	ctx.Next(w, r, pr)
+}
+
+type setCallDepth interface {
+	SetFileDepth(depth int)
 }
