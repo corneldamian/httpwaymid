@@ -14,9 +14,9 @@ import (
 
 //session
 type Session struct {
-	id       string
-	data     map[string]interface{}
-	dataSync *sync.RWMutex
+	id           string
+	data         map[string]interface{}
+	dataSync     *sync.RWMutex
 	creationTime time.Time
 }
 
@@ -37,9 +37,9 @@ func newSession() *Session {
 	}
 
 	return &Session{
-		id:       id,
-		data:     make(map[string]interface{}),
-		dataSync: &sync.RWMutex{},
+		id:           id,
+		data:         make(map[string]interface{}),
+		dataSync:     &sync.RWMutex{},
 		creationTime: time.Now(),
 	}
 }
@@ -128,7 +128,7 @@ type SessionManager struct {
 
 // create a new session manager
 func NewSessionManager(expiration time.Duration) *SessionManager {
-	sm:= &SessionManager{
+	sm := &SessionManager{
 		sessions:     make(map[string]*Session),
 		sessionsSync: &sync.RWMutex{},
 	}
@@ -140,7 +140,7 @@ func NewSessionManager(expiration time.Duration) *SessionManager {
 
 func (sm *SessionManager) gc(expiration time.Duration) {
 	for {
-		time.Sleep( 60 * time.Second)
+		time.Sleep(60 * time.Second)
 
 		deleteList := make([]string, 0, 100)
 		sm.sessionsSync.RLock()
