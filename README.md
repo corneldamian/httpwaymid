@@ -6,6 +6,7 @@
 - PanicCatcher middleware
 - NotFound and MethodNotAllowed handler
 - In memory SessionManager 
+- Json and template renderers
 
 [![GoDoc](https://godoc.org/github.com/corneldamian/httpwaymid?status.svg)](https://godoc.org/github.com/corneldamian/httpwaymid)
 
