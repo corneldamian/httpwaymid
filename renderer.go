@@ -61,14 +61,13 @@ func JSONRenderer(ctxDataVar, ctxHttpStatusCodeVar string) httprouter.Handle {
 // you can set a diffrent (the 200) http status code with "ctxHttpStatusCodeVar"
 func TemplateRenderer(templateDir, ctxTemplateNameVar, ctxTempalteDataVar, ctxHttpStatusCodeVar string) httprouter.Handle {
 	templates := template.Must(template.ParseGlob(filepath.Join(templateDir, "*.tmpl")))
-	println("l")
+
 	return func(w http.ResponseWriter, r *http.Request, pr httprouter.Params) {
 		ctx := httpway.GetContext(r)
 
 		ctx.Next(w, r, pr)
-		println("t")
+
 		if ctx.Has(ctxTempalteDataVar) && ctx.Has(ctxTemplateNameVar) {
-			println("t1")
 			if ctx.Has(ctxHttpStatusCodeVar) {
 				w.WriteHeader(ctx.Get(ctxHttpStatusCodeVar).(int))
 			}
