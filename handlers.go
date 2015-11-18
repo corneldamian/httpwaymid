@@ -1,20 +1,19 @@
 package httpwaymid
 
 import (
-	"net/http"
 	"fmt"
+	"net/http"
 
 	"github.com/corneldamian/httpway"
 	"github.com/julienschmidt/httprouter"
 )
 
-
 //is going to return a handler for httprouter NotFound, can be chained with middlewares
 func NotFound(router *httpway.Router) http.Handler {
 	return &simpleServe{
 		statusCode: http.StatusNotFound,
-		status: "Page not found",
-		router: router,
+		status:     "Page not found",
+		router:     router,
 	}
 }
 
@@ -22,18 +21,19 @@ func NotFound(router *httpway.Router) http.Handler {
 func MethodNotAllowed(router *httpway.Router) http.Handler {
 	return &simpleServe{
 		statusCode: http.StatusMethodNotAllowed,
-		status: "Method not allowed",
-		router: router,
+		status:     "Method not allowed",
+		router:     router,
 	}
 }
 
 type simpleServe struct {
 	statusCode int
-	status string
-	router *httpway.Router
+	status     string
+	router     *httpway.Router
 }
 
 var one = 1
+
 func (ss *simpleServe) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	httprouterHandler := func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		w.Header().Set("X-Content-Type-Options", "nosniff")
@@ -51,6 +51,6 @@ func (ss *simpleServe) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	h :=ss.router.GenerateChainHandler(httprouterHandler)
+	h := ss.router.GenerateChainHandler(httprouterHandler)
 	h(w, r, make(httprouter.Params, 0))
 }

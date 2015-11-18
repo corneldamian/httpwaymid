@@ -1,31 +1,31 @@
 package httpwaymid
 
 import (
-	"net/http"
-	"time"
 	"net"
+	"net/http"
 	"strings"
+	"time"
 
-	"github.com/julienschmidt/httprouter"
-	"github.com/corneldamian/httpway"
-	"io"
 	"fmt"
+	"github.com/corneldamian/httpway"
+	"github.com/julienschmidt/httprouter"
+	"io"
 )
 
 //this handler will write to logger function (the one form parameter) the w3c access log
 //this are the fields:
 //#Fields: c-ip x-c-user date time cs-method cs-uri-stem cs-uri-query cs(X-Forwarded-For) sc-bytes sc-status time-taken
 //when you first init or change logging file, call AccessLogHeader to write the w3c fields
-func AccessLog(logger func(v ...interface{})) httprouter.Handle{
+func AccessLog(logger func(v ...interface{})) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, pr httprouter.Params) {
-		ctx:=httpway.GetContext(r)
+		ctx := httpway.GetContext(r)
 
 		starttime := time.Now()
 
 		ctx.Next(w, r, pr)
 
 		username := "-"
-		if ctx.HasSession() && ctx.Session().Username() != ""{
+		if ctx.HasSession() && ctx.Session().Username() != "" {
 			username = ctx.Session().Username()
 		}
 		ip, _, err := net.SplitHostPort(r.RemoteAddr)
@@ -42,7 +42,7 @@ func AccessLog(logger func(v ...interface{})) httprouter.Handle{
 		if xforwarded != "" {
 			tmpsplit := strings.Split(xforwarded, ",")
 			if len(tmpsplit) > 0 {
-				xforwarded = tmpsplit[len(tmpsplit) - 1]
+				xforwarded = tmpsplit[len(tmpsplit)-1]
 			}
 
 			xforwarded = strings.Trim(xforwarded, " ")

@@ -1,22 +1,23 @@
 package httpwaymid
 
 import (
-	"sync"
 	"net/http"
+	"sync"
 
-	"github.com/corneldamian/httpway"
-	"crypto/rand"
-	"encoding/hex"
 	"crypto/md5"
-	"time"
+	"crypto/rand"
 	"encoding/binary"
+	"encoding/hex"
+	"github.com/corneldamian/httpway"
+	"time"
 )
 
 //session
 type Session struct {
-	id string
-	data map[string]interface{}
+	id       string
+	data     map[string]interface{}
 	dataSync *sync.RWMutex
+	creationTime time.Time
 }
 
 func newSession() *Session {
@@ -36,9 +37,10 @@ func newSession() *Session {
 	}
 
 	return &Session{
-		id: id,
-		data: make(map[string]interface{}),
+		id:       id,
+		data:     make(map[string]interface{}),
 		dataSync: &sync.RWMutex{},
+		creationTime: time.Now(),
 	}
 }
 
@@ -50,7 +52,7 @@ func (s *Session) IsAuth() bool {
 	s.dataSync.RLock()
 	defer s.dataSync.RUnlock()
 
-	v, ok :=s.data["_isAuth"]
+	v, ok := s.data["_isAuth"]
 	if !ok {
 		return false
 	}
@@ -68,7 +70,7 @@ func (s *Session) Username() string {
 	s.dataSync.RLock()
 	defer s.dataSync.RUnlock()
 
-	v, ok :=s.data["_username"]
+	v, ok := s.data["_username"]
 	if !ok {
 		return ""
 	}
@@ -100,7 +102,7 @@ func (s *Session) GetInt(key string) int {
 	s.dataSync.RLock()
 	defer s.dataSync.RUnlock()
 
-	v, ok :=s.data[key]
+	v, ok := s.data[key]
 	if !ok {
 		return 0
 	}
@@ -111,7 +113,7 @@ func (s *Session) GetString(key string) string {
 	s.dataSync.RLock()
 	defer s.dataSync.RUnlock()
 
-	v, ok :=s.data[key]
+	v, ok := s.data[key]
 	if !ok {
 		return ""
 	}
@@ -120,21 +122,48 @@ func (s *Session) GetString(key string) string {
 
 //sessions manager
 type SessionManager struct {
-	sessions map[string] *Session
+	sessions     map[string]*Session
 	sessionsSync *sync.RWMutex
 }
 
 // create a new session manager
-func NewSessionManager() *SessionManager {
-	return &SessionManager{
-		sessions: make(map[string]*Session),
+func NewSessionManager(expiration time.Duration) *SessionManager {
+	sm:= &SessionManager{
+		sessions:     make(map[string]*Session),
 		sessionsSync: &sync.RWMutex{},
+	}
+
+	go sm.gc(expiration)
+
+	return sm
+}
+
+func (sm *SessionManager) gc(expiration time.Duration) {
+	for {
+		time.Sleep( 60 * time.Second)
+
+		deleteList := make([]string, 0, 100)
+		sm.sessionsSync.RLock()
+		for k, v := range sm.sessions {
+			if time.Since(v.creationTime) > expiration {
+				deleteList = append(deleteList, k)
+			}
+		}
+		sm.sessionsSync.RUnlock()
+
+		if len(deleteList) > 0 {
+			sm.sessionsSync.Lock()
+			for _, k := range deleteList {
+				delete(sm.sessions, k)
+			}
+			sm.sessionsSync.Unlock()
+		}
 	}
 }
 
 //will get the session or create it if not found, cookie will be set with the new session
 func (sm *SessionManager) Get(w http.ResponseWriter, r *http.Request) httpway.Session {
-	sessionId:= ""
+	sessionId := ""
 
 	cook, err := r.Cookie("_s")
 	if err == nil {
@@ -164,7 +193,6 @@ func (sm *SessionManager) newSession(w http.ResponseWriter) *Session {
 	sm.sessionsSync.Lock()
 	sm.sessions[s.id] = s
 	sm.sessionsSync.Unlock()
-
 
 	newCook := &http.Cookie{Name: "_s", Value: s.Id(), Path: "/"}
 	http.SetCookie(w, newCook)
