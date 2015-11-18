@@ -1,16 +1,15 @@
 package httpwaymid
 
 import (
-	"net/http"
-
 	"fmt"
-	"github.com/corneldamian/httpway"
-	"github.com/julienschmidt/httprouter"
+	"net/http"
 	"runtime"
+
+	"github.com/corneldamian/httpway"
 )
 
 //will catch a panic and if the logger is set will log it, if not will panic again
-func PanicCatcher(w http.ResponseWriter, r *http.Request, pr httprouter.Params) {
+func PanicCatcher(w http.ResponseWriter, r *http.Request) {
 	ctx := httpway.GetContext(r)
 
 	defer func() {
@@ -35,7 +34,7 @@ func PanicCatcher(w http.ResponseWriter, r *http.Request, pr httprouter.Params) 
 		}
 	}()
 
-	ctx.Next(w, r, pr)
+	ctx.Next(w, r)
 }
 
 func getFileLine() (file string, line int) {

@@ -35,7 +35,7 @@ type simpleServe struct {
 var one = 1
 
 func (ss *simpleServe) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	httprouterHandler := func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	httprouterHandler := func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("X-Content-Type-Options", "nosniff")
 
 		if r.Header.Get("Content-Type") == "application/json" {
