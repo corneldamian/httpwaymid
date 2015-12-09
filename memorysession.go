@@ -21,22 +21,7 @@ type Session struct {
 	accessTime   time.Time
 }
 
-func newSession() *Session {
-	id := ""
-
-	b := make([]byte, 32)
-	n, err := rand.Read(b)
-
-	if n != len(b) || err != nil {
-		t := make([]byte, 32)
-		binary.LittleEndian.PutUint64(t, uint64(time.Now().UnixNano()))
-		hasher := md5.New()
-		hasher.Write(t)
-		id = hex.EncodeToString(hasher.Sum(nil))
-	} else {
-		id = hex.EncodeToString(b)
-	}
-
+func NewSession(id string) *Session {
 	return &Session{
 		id:           id,
 		data:         make(map[string]interface{}),
@@ -183,6 +168,10 @@ func (sm *SessionManager) Get(w http.ResponseWriter, r *http.Request, log httpwa
 		sessionId = cook.Value
 	}
 
+	return sm.GetById(sessionId, w, r, log)
+}
+
+func (sm *SessionManager) GetById(sessionId string, w http.ResponseWriter, r *http.Request, log httpway.Logger) httpway.Session {
 	sm.sessionsSync.RLock()
 	s, found := sm.sessions[sessionId]
 	sm.sessionsSync.RUnlock()
@@ -201,6 +190,15 @@ func (sm *SessionManager) Get(w http.ResponseWriter, r *http.Request, log httpwa
 	return s
 }
 
+func (sm *SessionManager) Has(sessionId string) bool {
+	sm.sessionsSync.RLock()
+	defer sm.sessionsSync.RUnlock()
+
+	_, ok := sm.sessions[sessionId]
+
+	return ok
+}
+
 func (sm *SessionManager) Set(w http.ResponseWriter, r *http.Request, session httpway.Session, log httpway.Logger) {
 	sm.sessionsSync.Lock()
 	sm.sessions[session.Id()] = session.(*Session)
@@ -210,7 +208,21 @@ func (sm *SessionManager) Set(w http.ResponseWriter, r *http.Request, session ht
 }
 
 func (sm *SessionManager) newSession(w http.ResponseWriter) *Session {
-	s := newSession()
+	b := make([]byte, 32)
+	n, err := rand.Read(b)
+	id := ""
+
+	if n != len(b) || err != nil {
+		t := make([]byte, 32)
+		binary.LittleEndian.PutUint64(t, uint64(time.Now().UnixNano()))
+		hasher := md5.New()
+		hasher.Write(t)
+		id = hex.EncodeToString(hasher.Sum(nil))
+	} else {
+		id = hex.EncodeToString(b)
+	}
+
+	s := NewSession(id)
 
 	sm.sessionsSync.Lock()
 	sm.sessions[s.id] = s
